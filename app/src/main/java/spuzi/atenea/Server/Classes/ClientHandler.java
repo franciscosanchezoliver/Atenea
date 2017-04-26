@@ -8,7 +8,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import static spuzi.atenea.Server.Classes.CameraPreview.bufferImagenes;
+import static spuzi.atenea.Server.Classes.CameraPreview.BUFFER_IMAGES;
 import static spuzi.atenea.Server.Screens.CameraOnline.tcpServer;
 
 /**
@@ -86,7 +86,7 @@ public class ClientHandler implements Runnable {
         while ( run ) {
             image = null;
             while(run && image == null) {
-                image = (Image) bufferImagenes.getFirst();// Last image capture by the camera
+                image = (Image) BUFFER_IMAGES.getFirst();// Last image capture by the camera
             }
             sound = (Sound) Microphone.bufferSonidos.getLast();
 

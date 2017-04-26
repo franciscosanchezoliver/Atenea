@@ -20,7 +20,7 @@ public abstract class Worker implements Runnable {
     /**
      * Start the thread
      */
-    protected void startWorker(){
+    public void startWorker(){
         System.out.println("Starting thread " + getClass().getName());
         this.thread = new Thread(this);
         this.isRunning = true;
@@ -30,7 +30,7 @@ public abstract class Worker implements Runnable {
     /**
      * Stop the thread
      */
-    protected void stopWorker(){
+    public void stopWorker(){
         boolean stop = true;
         this.isRunning = false;
         while(stop) {

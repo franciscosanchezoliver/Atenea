@@ -34,16 +34,14 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private SurfaceHolder mHolder;
     private int width;
     private int height;
-    public Context context ;
+    private Context context ;
     private Camera camera;
     Camera.Parameters params;
-
     private boolean isRunning = false;
+    //static variable that can be shared between different threads
+    public static Buffer BUFFER_IMAGES = new Buffer( 10);
 
-    //variable estática para que pueda ser compartida con los hilos que se creen
-    static Buffer bufferImagenes = new Buffer( 10);
-
-    public void openCamera(){
+    private void openCamera(){
         if( camera == null) {
             try {
                 camera = Camera.open(); // attempt to get a Camera instance
@@ -151,6 +149,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
+        //Do something when the surface is destroyed
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
@@ -199,13 +198,17 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
          */
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
-            bufferImagenes.add(
+            BUFFER_IMAGES.add(
                     new Image( data , params.getPreviewSize().width, params.getPreviewSize().height)
-                              );
+                             );
         }
     };
 
-    public Comparator<Camera.Size> getComparatorBySize (){
+    /**
+     * Comparator used to order the list of the sizes availables in the camera
+     * @return
+     */
+    private Comparator<Camera.Size> getComparatorBySize (){
         Comparator comparator = new Comparator < Camera.Size >() {
             @Override
             public int compare ( Camera.Size o1, Camera.Size o2 ) {
@@ -235,8 +238,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             } );
             isRunning = false;
         }
-
-        bufferImagenes.reset();
+        BUFFER_IMAGES.reset();
     }
 
     public void resume(){

@@ -25,7 +25,7 @@ public class TCPServer extends Worker {
     private String privateIP;
     private String publicIP;
     private String password;
-    private String nombre;
+    private String name;
 
     public TCPServer ( String mac, String privateIP, String publicIP, String password, int port , CameraPreview cameraPreview ){
         this.cameraPreview = cameraPreview;
@@ -34,13 +34,13 @@ public class TCPServer extends Worker {
         this.publicIP = publicIP;
         this.password = password;
         this.port = port;
-        this.nombre = mac.replace(":" , ""); //the device's name is the mac without ":"
+        this.name = mac.replace(":" , ""); //the device's name is the mac without ":"
         System.out.println("Data of this device:");
         System.out.println("\tMAC:" + mac);
         System.out.println("\tprivate IP:" + privateIP );
         System.out.println("\tpublic IP:" + publicIP );
         System.out.println("\tport:" + port);
-        System.out.println("\tname:" + this.nombre);
+        System.out.println("\tname:" + this.name);
         System.out.println("\tpassword:" + password);
     }
 
@@ -77,24 +77,21 @@ public class TCPServer extends Worker {
             System.out.println("Server: port " + port + " open." );
 
             //update in the cloud the data of this device
-            updateDBInCloud = new UpdateDBInCloud( mac, publicIP, privateIP, port, nombre , password  );
-            updateDBInCloud.startThread();
+            updateDBInCloud = new UpdateDBInCloud( mac, publicIP, privateIP, port, name , password  );
+            updateDBInCloud.startWorker();
         } catch (Exception e) {
             Log.e("ERROR:", "error opening port "+ port +" ." );
             e.printStackTrace();
         }
     }
 
-    public void startThread(){
-        super.startWorker();
-    }
-
-    public void stopThread(){
+    @Override
+    public void stopWorker () {
         try {
             System.out.println("Closing socket that were listening to new clients.");
             socketAccept.close();
         } catch ( IOException e ) {
-            e.printStackTrace();
+            System.out.println("Closed.");
         }
         super.stopWorker();
     }
@@ -103,7 +100,7 @@ public class TCPServer extends Worker {
     public void addNewClient(){
         synchronized ( numberClients ){
             numberClients++;
-            startCameraIfOneClient();
+            startCameraIfFirstClient();
         }
     }
 
@@ -114,19 +111,18 @@ public class TCPServer extends Worker {
         }
     }
 
-
     /**
      * If there are no clients connected to the server then it is no sense to keep the camera on.
      * It would make the device to overheat
      */
-    public void stopCameraIfNoClients(){
+    private void stopCameraIfNoClients(){
         //if the camera was running but there is no clients now, then stops the camera
         if( numberClients == 0 && cameraPreview.isRunning() ){
             cameraPreview.pause();
         }
     }
 
-    public void startCameraIfOneClient(){
+    private void startCameraIfFirstClient (){
         //start the camera when the first client come and the camera wasn't running
         if(numberClients== 1 && !cameraPreview.isRunning()){
             cameraPreview.resume();

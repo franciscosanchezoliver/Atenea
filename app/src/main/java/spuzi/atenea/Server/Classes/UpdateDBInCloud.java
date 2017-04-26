@@ -6,18 +6,17 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import spuzi.atenea.Common.Worker;
+
 /**
  * Created by spuzi on 09/03/2017.
  * Connects to a database in the cloud and updates the data for this device ( mac , ip public and private, port , name and password)
  * To communicate with the webpage this class send a POST request
  */
 
-public class UpdateDBInCloud extends Thread {
+public class UpdateDBInCloud extends Worker {
     private final String USER_AGENT = "Mozilla/5.0";
     private final String url = "http://spuzi.esy.es/camara/addCamara.php"; //adds or update a device in the DB
-    Thread thread;
-    private boolean run;
-
     private String mac = "mac=";
     private String publicIP = "ip_publica=";
     private String privateIP = "ip_privada=";
@@ -34,11 +33,8 @@ public class UpdateDBInCloud extends Thread {
         this.password += password;
     }
 
-
     @Override
     public void run () {
-        super.run();
-        if(run) {
             try {
                 URL obj = new URL( url );
                 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -72,34 +68,10 @@ public class UpdateDBInCloud extends Thread {
                 in.close();
 
                 System.out.println( response.toString() );
+                super.stopWorker();
             } catch ( Exception e ) {
                 System.out.println( e.getMessage() );
             }
-        }
-    }
-
-    public void startThread(){
-        this.thread = new Thread(this);
-        setRun(true);
-        thread.start();
-    }
-
-    public void stopThread(){
-        boolean stop = true;
-        setRun( false );
-        while(stop) {
-            try {
-                this.thread.join();
-                stop = false;
-            } catch ( InterruptedException e ) {
-                e.printStackTrace();
-                break;
-            }
-        }
-    }
-
-    public void setRun ( boolean run ) {
-        this.run = run;
     }
 
 }

@@ -238,8 +238,9 @@ public class CameraOnline extends NetworkActivity implements View.OnClickListene
         //Start a new TCP Server to listen to new clients
         if(tcpServer == null)
             tcpServer = new TCPServer( mac, privateIp, publicIp, PASSWORD , port, cameraPreview);
-        if( tcpServer != null && !tcpServer.isRunning() )
-            tcpServer.startThread();
+        if( tcpServer != null && !tcpServer.isRunning() ){
+            tcpServer.startWorker();
+        }
     }
     private void startRecordingMicrophone(){
         //Microphone to start listening to sounds
@@ -250,7 +251,7 @@ public class CameraOnline extends NetworkActivity implements View.OnClickListene
     }
     private void stopTCPServer(){
         if( tcpServer != null && tcpServer.isRunning() )
-            tcpServer.stopThread();
+            tcpServer.stopWorker();
     }
     private void stopRecordingMicrophone(){
         if( microphone != null && microphone.isRunning())
