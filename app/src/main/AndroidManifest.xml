@@ -1,0 +1,60 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="spuzi.atenea">
+
+    <uses-permission android:name="android.permission.SET_DEBUG_APP"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <service android:name="org.fourthline.cling.android.AndroidUpnpServiceImpl"/>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity android:name=".Server.Screens.CameraOnline"
+                  android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+                  android:screenOrientation="landscape">
+
+        </activity>
+
+        <service android:name=".Server.Classes.PortOpenerService" android:exported="false"/>
+
+        <activity android:name=".Server.Screens.SetPreviewCamera"
+                  android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
+        </activity>
+
+        <activity android:name=".Server.Screens.InputPassword"
+                  android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
+        </activity>
+
+
+        <activity android:name=".Common.StartScreen"
+                  android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".Client.Screens.ConnectTo"
+                  android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
+        </activity>
+
+        <activity android:name=".Client.Screens.CameraViewer"
+                  android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
+        </activity>
+
+
+    </application>
+
+</manifest>

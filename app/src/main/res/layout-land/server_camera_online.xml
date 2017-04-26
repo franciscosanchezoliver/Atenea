@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/background"
+              android:keepScreenOn="true">
+
+    <ProgressBar
+        android:id="@+id/progressBarStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
+
+    <TextView
+        android:id="@+id/cameraOnline"
+        android:layout_above="@+id/cameraName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Camera Online"
+        android:layout_centerHorizontal="true"
+        android:textSize="36sp"
+        android:textColor="@android:color/white"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/buttonStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="stop"
+        android:textSize="34dp"
+        android:alpha="0.7"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="10dp"
+        android:textColor="@android:color/background_light"
+        style="@style/Widget.AppCompat.Button"
+        android:background="@color/cards"
+        />
+
+    <FrameLayout
+        android:id="@+id/cameraView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/buttonStop"
+        android:layout_centerHorizontal="true"/>
+
+    <TextView
+        android:id="@+id/cameraName"
+        android:layout_above="@id/cameraView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="name"
+        android:layout_centerHorizontal="true"
+        android:textSize="24sp"
+        android:alpha="0.7"
+        android:textColor="@android:color/white"
+        android:textAllCaps="false"/>
+
+</RelativeLayout>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/background"
+                android:keepScreenOn="true">
+
+    <TextView
+        android:id="@+id/textViewConectarCamara"
+        android:text="@string/connect_to_camera"
+        android:gravity="center"
+        style="@style/title"
+        />
+
+    <EditText
+        android:id="@+id/editTextNombre"
+        android:layout_below="@id/textViewConectarCamara"
+        android:hint="@string/name"
+        style="@style/ServerInputPassword"
+
+        />
+
+    <ProgressBar
+        android:id="@+id/progressBarCargando"
+        style="@style/progressBar"/>
+
+    <EditText
+        android:id="@+id/editTextPassword"
+        android:hint="@string/input_camera_password"
+        android:layout_below="@id/editTextNombre"
+        style="@style/ServerInputPassword"
+        />
+
+    <Button
+        android:text="@string/connect"
+        android:layout_below="@+id/editTextPassword"
+        android:id="@+id/botonConnect"
+        android:layout_centerHorizontal="true"
+        style="@style/Button"
+        />
+
+</RelativeLayout>

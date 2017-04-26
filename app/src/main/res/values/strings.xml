@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Atenea</string>
+    <string name="loading">Loading</string>
+    <string name="input_camera_password">Camera´s password</string>
+    <string name="camera_online">Camera Online</string>
+    <string name="next">Next</string>
+    <string name="back">Back</string>
+    <string name="stop">Stop</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="name">Name</string>
+    <string name="connect">Connect</string>
+    <string name="connect_to_camera">Connect to camera</string>
+    <string name="no_network_title">Not connected</string>
+    <string name="no_network">This device is not connected to any network. Please connect the device to a network before to continue.</string>
+    <string name="no_internet_title">No Internet</string>
+    <string name="no_internet">This device is not connected to Internet. It can be reach only from inside your local area network.</string>
+    <string name="no_internet_client">This device is not connected to Internet. You can only access to cameras connected to the same LAN.</string>
+    <string name="camera_permission">Camera permission</string>
+    <string name="ask_camera_permission">This application needs permission to use camera, if you don´t the app can´t continue.</string>
+    <string name="continue_anyway">Continue anyway</string>
+    <string name="use_as_a_camera">Use as a camera</string>
+    <string name="connect_to_a_camera">Connect to a camera</string>
+    <string name="password_incorrect_title">Password incorrect</string>
+    <string name="password_incorrect">The given password is incorrect.</string>
+    <string name="not_found_title">Not found</string>
+    <string name="not_found">A camera with that name was not found.</string>
+</resources>

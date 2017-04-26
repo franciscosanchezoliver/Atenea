@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/background"
+                android:keepScreenOn="true">
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="@style/progressBar"/>
+
+    <TextView
+        android:id="@+id/textViewCargando"
+        android:layout_above="@id/progressBar"
+        android:text="@string/loading"
+        style="@style/title"
+        />
+
+
+    <FrameLayout
+        android:id="@+id/cameraView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        >
+
+    </FrameLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@+id/cameraView">
+
+        <Button
+            android:id="@+id/botonStop"
+            android:text="@string/stop"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            style="@style/Button"
+            />
+    </RelativeLayout>
+
+
+</RelativeLayout>

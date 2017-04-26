@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/background"
+              android:keepScreenOn="true">
+
+    <ProgressBar
+        android:id="@+id/progressBarStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
+
+    <TextView
+        android:id="@+id/cameraOnline"
+        android:layout_above="@+id/cameraName"
+        android:text="@string/camera_online"
+        android:textSize="@dimen/very_big_text_size"
+        style="@style/title"
+        />
+
+    <Button
+        android:id="@+id/buttonStop"
+        style="@style/Button"
+        android:textSize="@dimen/very_big_text_size"
+        android:text="@string/stop"
+        android:layout_centerInParent="true"
+        />
+
+    <FrameLayout
+        android:id="@+id/cameraView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/buttonStop"
+        android:layout_centerHorizontal="true"/>
+
+    <TextView
+        android:id="@+id/cameraName"
+        android:layout_above="@id/cameraView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="name"
+        android:layout_centerHorizontal="true"
+        android:textSize="@dimen/big_text_size"
+        android:alpha="0.7"
+        android:textColor="@android:color/white"
+        android:textAllCaps="false"/>
+
+</RelativeLayout>
