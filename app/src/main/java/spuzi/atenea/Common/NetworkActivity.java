@@ -149,6 +149,14 @@ public abstract class NetworkActivity extends AppCompatActivity implements OnNet
         } );
     }
 
-
+    public String getPublicIP(){
+        return this.statusNetwork.getPublicIP();
+    }
+    public String getPrivateIP(){
+        return this.statusNetwork.getPrivateIP();
+    }
+    public String getMac(){
+        return this.statusNetwork.getMac();
+    }
 
 }

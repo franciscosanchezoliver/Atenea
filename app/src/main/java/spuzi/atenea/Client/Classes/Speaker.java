@@ -5,24 +5,22 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.util.Log;
 
-import static spuzi.atenea.Client.Classes.Conector.bufferSounds;
+import spuzi.atenea.Common.Worker;
+
+import static spuzi.atenea.Client.Classes.Connector.bufferSounds;
 
 /**
  * Created by spuzi on 23/03/2017.
  */
 
-public class Speaker implements Runnable{
+public class Speaker extends Worker{
 
     private AudioTrack audioTrack;
     private int bufferSize;
     private int sampleRate = 16000; // 44100 for music
     private int channelConfig = AudioFormat.CHANNEL_OUT_MONO;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
-
-    static boolean  seccionCritica = false;
-
-    Thread thread;
-    private boolean run;
+    static boolean criticalSection = false;
 
 
     public Speaker ( ) {
@@ -32,12 +30,11 @@ public class Speaker implements Runnable{
 
     @Override
     public void run () {
-
         audioTrack = new AudioTrack( AudioManager.STREAM_MUSIC, sampleRate, channelConfig, audioFormat, bufferSize , AudioTrack.MODE_STREAM );
         audioTrack.play();
-        seccionCritica = true;
+        criticalSection = true;
 
-        while(run) {
+        while(super.isRunning()) {
             if(bufferSounds != null && bufferSounds.size() > 0) {
                 try {
                     playSound( (Sonido) bufferSounds.pollFirst() );
@@ -47,8 +44,6 @@ public class Speaker implements Runnable{
                 }
             }
         }
-
-
     }
 
     private void playSound(Sonido sonido ){
@@ -56,37 +51,10 @@ public class Speaker implements Runnable{
     }
 
 
-    public void startThread(){
-        //iniciamos el hilo
-        this.thread = new Thread(this);
-        setRun(true);
-        thread.start();
-    }
-
-    public void stopThread(){
-        //paramos el hilo
-        boolean stop = true;
-        setRun( false );
-
+    @Override
+    public void stopWorker () {
+        super.stopWorker();
         audioTrack.release();
-
-        while(stop) {
-            try {
-                this.thread.join();
-                stop = false;
-            } catch ( InterruptedException e ) {
-                e.printStackTrace();
-                break;
-            }
-        }
-    }
-
-    public void setRun ( boolean run ) {
-        this.run = run;
-    }
-
-    public boolean isRunning () {
-        return run;
     }
 
 

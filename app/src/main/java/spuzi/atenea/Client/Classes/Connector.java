@@ -18,15 +18,16 @@ import java.util.StringTokenizer;
 import spuzi.atenea.Common.Buffer;
 import spuzi.atenea.Common.ElSonido;
 import spuzi.atenea.Common.LaImagen;
+import spuzi.atenea.Common.Worker;
 
-import static spuzi.atenea.Client.Classes.Speaker.seccionCritica;
+import static spuzi.atenea.Client.Classes.Speaker.criticalSection;
 
 /**
  * Created by spuzi on 23/03/2017.
  */
 
 
-public class Conector implements Runnable{
+public class Connector extends Worker{
     private static final int TIEMPO_LIMITE_CONEXION = 10000;
     private int MAX_CONECTION_ATTEMPT = 15;
     private Socket socket ;
@@ -59,7 +60,7 @@ public class Conector implements Runnable{
     //variable que indica cuando el hilo se esta ejecutando o no.
     boolean run;
 
-    public Conector (String IP , int puerto , String password) {
+    public Connector ( String IP , int puerto , String password ) {
         this.password = password;
         socket = new Socket(  );//abrimos un socket para comunicarnos con el servidor
         this.port = puerto;
@@ -175,7 +176,7 @@ public class Conector implements Runnable{
                     }
 
                     sonido = new ElSonido( soundData );
-                    if( sonido.getLength() > 0  && seccionCritica) {
+                    if( sonido.getLength() > 0  && criticalSection ) {
                         bufferSounds.add( sonido );
                         //System.out.println("sonido insertado: " + bufferSounds.size() );
                     }

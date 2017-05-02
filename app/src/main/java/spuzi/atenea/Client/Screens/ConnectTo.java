@@ -14,9 +14,7 @@ import spuzi.atenea.Client.Classes.Camera;
 import spuzi.atenea.Client.Classes.RemoteCameraStatusChecker;
 import spuzi.atenea.Client.Classes.RemoteCameraStatus;
 import spuzi.atenea.Common.NetworkActivity;
-import spuzi.atenea.Common.StatusNetwork;
 import spuzi.atenea.Client.Interfaces.OnCheckRemoteCameraStatus;
-import spuzi.atenea.Common.NetworkStatusEnum;
 import spuzi.atenea.R;
 import spuzi.atenea.Server.Interfaces.OnEventListener;
 import spuzi.atenea.Server.Screens.DialogScreen;
@@ -24,25 +22,23 @@ import spuzi.atenea.Server.Screens.DialogScreen;
 /**
  * Created by spuzi on 22/03/2017.
  *
- * A screen that shows 2 EditText to enter the name of the camera you want to connect to and the its password
+ * A screen that shows 2 EditText to enter the name of the remoteCamera you want to connect to and the its password
  *
  */
 
 public class ConnectTo extends NetworkActivity implements View.OnClickListener , OnCheckRemoteCameraStatus{
 
 
-    private TextView textViewConectarCamara;
-    private EditText editTextNombre;
+    private TextView textViewConnectToCamera;
+    private EditText editTextName;
     private EditText editTextPassword;
-    private Button botonConnect;
-    private ProgressBar progressBarCargando;
+    private Button buttonConnect;
+    private ProgressBar progressBarLoading;
     private SharedPreferences prefs;//to save the name and password written by the user
-
-    private Camera camera; //The data of the remote camera (ip private and public and port)
-    private String nombre;//the name of the remote camera
-    private String password;//the name of the remote camera
-
-    private RemoteCameraStatusChecker remoteCameraStatusChecker; //Check if the remote camera is online
+    private Camera remoteCamera; //The data of the remote remoteCamera (ip private and public and port)
+    private String name;//the name of the remote remoteCamera entered by the user
+    private String password;//the password of the remote remoteCamera entered by the user
+    private RemoteCameraStatusChecker remoteCameraStatusChecker; //Check if the remote remoteCamera is online
 
 
     @Override
@@ -58,13 +54,13 @@ public class ConnectTo extends NetworkActivity implements View.OnClickListener ,
      */
     private void initUIElements () {
         setContentView( R.layout.client_connect_to );
-        textViewConectarCamara = (TextView) findViewById( R.id.textViewConectarCamara );
-        editTextNombre = (EditText) findViewById( R.id.editTextNombre );
+        textViewConnectToCamera = (TextView) findViewById( R.id.textViewConectarCamara );
+        editTextName = (EditText) findViewById( R.id.editTextNombre );
         editTextPassword = (EditText) findViewById( R.id.editTextPassword );
-        botonConnect = (Button) findViewById( R.id.botonConnect );
-        botonConnect.setOnClickListener( this );
-        progressBarCargando = (ProgressBar) findViewById( R.id.progressBarCargando );
-        progressBarCargando.setVisibility( View.INVISIBLE );
+        buttonConnect = (Button) findViewById( R.id.botonConnect );
+        buttonConnect.setOnClickListener( this );
+        progressBarLoading = (ProgressBar) findViewById( R.id.progressBarCargando );
+        progressBarLoading.setVisibility( View.INVISIBLE );
     }
 
     /**
@@ -73,10 +69,10 @@ public class ConnectTo extends NetworkActivity implements View.OnClickListener ,
      */
     private void recoverLastNameAndPassword(){
         prefs = getSharedPreferences( "Preferencias", Context.MODE_PRIVATE );
-        nombre = prefs.getString( "nombre", "" );
+        name = prefs.getString( "nombre", "" );
         //Fill the EditText
         password = prefs.getString("password", "");
-        editTextNombre.setText( nombre );
+        editTextName.setText( name );
         editTextPassword.setText( password );
     }
 
@@ -85,7 +81,7 @@ public class ConnectTo extends NetworkActivity implements View.OnClickListener ,
      */
     private void saveNameAndPassword(){
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString( "nombre", editTextNombre.getText().toString() );
+        editor.putString( "nombre", editTextName.getText().toString() );
         editor.putString( "password", editTextPassword.getText().toString() );
         editor.commit();
     }
@@ -100,10 +96,10 @@ public class ConnectTo extends NetworkActivity implements View.OnClickListener ,
         runOnUiThread( new Runnable() {
             @Override
             public void run () {
-                textViewConectarCamara.setText( getString( R.string.loading ) );
-                progressBarCargando.setVisibility( View.VISIBLE );
-                botonConnect.setVisibility( View.INVISIBLE );
-                editTextNombre.setVisibility( View.INVISIBLE );
+                textViewConnectToCamera.setText( getString( R.string.loading ) );
+                progressBarLoading.setVisibility( View.VISIBLE );
+                buttonConnect.setVisibility( View.INVISIBLE );
+                editTextName.setVisibility( View.INVISIBLE );
                 editTextPassword.setVisibility( View.INVISIBLE );
             }
         } );
@@ -118,10 +114,10 @@ public class ConnectTo extends NetworkActivity implements View.OnClickListener ,
         runOnUiThread( new Runnable() {
             @Override
             public void run () {
-                textViewConectarCamara.setText( getString( R.string.connect ) );
-                progressBarCargando.setVisibility( View.INVISIBLE );
-                botonConnect.setVisibility( View.VISIBLE );
-                editTextNombre.setVisibility( View.VISIBLE );
+                textViewConnectToCamera.setText( getString( R.string.connect ) );
+                progressBarLoading.setVisibility( View.INVISIBLE );
+                buttonConnect.setVisibility( View.VISIBLE );
+                editTextName.setVisibility( View.VISIBLE );
                 editTextPassword.setVisibility( View.VISIBLE );
             }
         } );
@@ -129,7 +125,7 @@ public class ConnectTo extends NetworkActivity implements View.OnClickListener ,
 
 
     /**
-     * When button is clicked the client tries to connect to a remote camera
+     * When button is clicked the client tries to connect to a remote remoteCamera
      */
     @Override
     public void onClick ( View v ) {
@@ -138,17 +134,18 @@ public class ConnectTo extends NetworkActivity implements View.OnClickListener ,
             case R.id.botonConnect:
                 saveNameAndPassword();
                 showLoadingElements();
-                //Check if the camera we want to connect to exist
-                remoteCameraStatusChecker = new RemoteCameraStatusChecker( editTextNombre.getText().toString(), this  );
+                //Check if the remoteCamera we want to connect to exist
+                remoteCameraStatusChecker = new RemoteCameraStatusChecker( editTextName.getText().toString(), this  );
+                remoteCameraStatusChecker.startWorker();
         }
     }
 
     /**
-     * This event gets the state of the camera we want to connect to
+     * This event gets the state of the remoteCamera we want to connect to
      */
     @Override
     public void onRemoteCameraStatusRecieved ( RemoteCameraStatus cameraStatus, Camera camera ) {
-        this.camera = camera;
+        this.remoteCamera = camera;
         switch ( cameraStatus ){
             case NOT_FOUND: remoteCameraNotFound();break;
             case AVAILABLE: remoteCameraFound();break;
@@ -156,7 +153,7 @@ public class ConnectTo extends NetworkActivity implements View.OnClickListener ,
     }
 
     /**
-     * Shows a dialog that tells the user that the camera he wants to connect doesn't exist
+     * Shows a dialog that tells the user that the remoteCamera he wants to connect doesn't exist
      */
     public void remoteCameraNotFound () {
         runOnUiThread( new Runnable() {
@@ -179,23 +176,23 @@ public class ConnectTo extends NetworkActivity implements View.OnClickListener ,
     }
 
     /**
-     * Shows a dialog that tells the user that the camera he wants to connect doesn't exist
+     * Shows a dialog that tells the user that the remoteCamera he wants to connect doesn't exist
      */
     public void remoteCameraFound () {
-        camera.printInfo();
+        remoteCamera.printInfo();
 
-        //if the given MAC and password are found in the web database then we have permission to access the camera
-        //so we can go to the next screen if all data is correct (name and password of the remote camera)
-        if( camera.getPassword().equals( editTextPassword.getText().toString() ) ) {
+        //if the given MAC and password are found in the web database then we have permission to access the remoteCamera
+        //so we can go to the next screen if all data is correct (name and password of the remote remoteCamera)
+        if( remoteCamera.getPassword().equals( editTextPassword.getText().toString() ) ) {
 
             //Go to next screen
             Intent intent = new Intent( getApplicationContext(), CameraViewer.class );
-            intent.putExtra( "MAC" , camera.getMac() );
-            intent.putExtra( "IP_PUBLICA" , camera.getPublicIP() );
-            intent.putExtra( "IP_PRIVADA" , camera.getPrivateIP() );
-            intent.putExtra( "PUERTO" , camera.getPort() );
-            intent.putExtra( "NOMBRE", camera.getName() );
-            intent.putExtra( "PASSWORD" , camera.getPassword() );
+            intent.putExtra( "MAC" , remoteCamera.getMac() );
+            intent.putExtra( "IP_PUBLICA" , remoteCamera.getPublicIP() );
+            intent.putExtra( "IP_PRIVADA" , remoteCamera.getPrivateIP() );
+            intent.putExtra( "PUERTO" , remoteCamera.getPort() );
+            intent.putExtra( "NOMBRE", remoteCamera.getName() );
+            intent.putExtra( "PASSWORD" , remoteCamera.getPassword() );
 
             startActivity( intent );
         }else{

@@ -18,27 +18,23 @@ import java.io.ByteArrayOutputStream;
  */
 
 
-public class Vista extends SurfaceView implements  Runnable{
-    SurfaceHolder holder;
-    private boolean run ;
-    private Thread thread;
+public class VideoViewer extends SurfaceView implements  Runnable{
+    private SurfaceHolder holder;
     private YuvImage yuv;//Android coge las imagenes en formato yuv
-    Bitmap bitmap;
-    ByteArrayOutputStream out;
-    byte[] bytes;
-    Bitmap.Config configuracion;
+    private Bitmap bitmap;
+    private ByteArrayOutputStream out;
+    private byte[] bytes;
+    private Bitmap.Config configuracion;
     private int width;
     private int height;
-    private double relacion;
-    final double RELACION_ANCHURA_ALTURA = 1.2 ;
+    private double ratio;
+    private final double RATIO_WIDTH_HEIGHT = 1.2 ;
+    private boolean run ;
+    private Thread thread;
 
 
 
-    public void setRun(boolean r){
-        this.run = r;
-    }
-
-    public Vista ( Context context , int width , int height ) {
+    public VideoViewer ( Context context , int width , int height ) {
         super( context );
 
         holder = getHolder();
@@ -51,11 +47,11 @@ public class Vista extends SurfaceView implements  Runnable{
         //dividimos anchura/altura nos da 1,2 . Por tanto vamos a hacer que siempre se mantenga esa proporcion
         this.width = width;
         this.height = height;
-        this.relacion =(double) width / height;
-        if(relacion < 1.2){//reducir altura
-            this.height = (int) (width/RELACION_ANCHURA_ALTURA);
+        this.ratio =(double) width / height;
+        if(ratio < 1.2){//reducir altura
+            this.height = (int) (width/ RATIO_WIDTH_HEIGHT );
         }else{//reducir anchura
-            this.width = (int)  (height * RELACION_ANCHURA_ALTURA);
+            this.width = (int)  (height * RATIO_WIDTH_HEIGHT );
         }
 
     }
@@ -96,14 +92,18 @@ public class Vista extends SurfaceView implements  Runnable{
         }
     }
 
+    public void setRun(boolean r){
+        this.run = r;
+    }
+
     private void painting ( Canvas canvas ) {
         //comprobamos que haya alguna imagen disponible, si no es así no podemos enseñar nada
-        if ( Conector.imagen != null ) {
+        if ( Connector.imagen != null ) {
 
             //Recibimos la imagen en formato RAW, esto en Android es formato yuv, el formato yuv
             //tenemos que convertirlo a un formato bitmap para mostrarlo en la pantalla
             try {
-                yuv = new YuvImage( Conector.imagen.getContent(), 17, 176, 144, null );
+                yuv = new YuvImage( Connector.imagen.getContent(), 17, 176, 144, null );
                 out = new ByteArrayOutputStream();
                 yuv.compressToJpeg( new Rect( 0, 0, 176, 144 ), 100, out );
                 bytes = out.toByteArray();

@@ -1,13 +1,8 @@
 package spuzi.atenea.Client.Screens;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -15,11 +10,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import spuzi.atenea.Client.Classes.Camera;
-import spuzi.atenea.Client.Classes.Conector;
+import spuzi.atenea.Client.Classes.Connector;
 import spuzi.atenea.Client.Classes.Speaker;
-import spuzi.atenea.Client.Classes.URLCaller;
-import spuzi.atenea.Client.Classes.Vista;
-import spuzi.atenea.Client.Screens.ConnectTo;
+import spuzi.atenea.Client.Classes.VideoViewer;
+import spuzi.atenea.Common.NetworkActivity;
 import spuzi.atenea.R;
 
 /**
@@ -27,20 +21,18 @@ import spuzi.atenea.R;
  */
 
 
-public class CameraViewer extends AppCompatActivity implements View.OnClickListener{
+public class CameraViewer extends NetworkActivity implements View.OnClickListener{
 
-    Camera camera;
-    String ipPublicaCliente;//la ip publica del cliente
+    private Camera remoteCamera;
+    private Button buttonStop;
+    private VideoViewer videoViewer;
+    private FrameLayout camView;
+    private int height = -1;
+    private int width =-1;
+    private Connector connector;
 
-    Button botonStop;
-    Vista vista;
-    FrameLayout camView;
-    int height = -1;
-    int width =-1;
-    Conector conector;
-
-    TextView textViewCargando;
-    ProgressBar progressBar;
+    private TextView textViewLoading;
+    private ProgressBar progressBar;
 
     private Speaker speaker;
 
@@ -50,11 +42,15 @@ public class CameraViewer extends AppCompatActivity implements View.OnClickListe
 
         initUIElements();
         adaptCameraSizeToScreenSize();
+        getDataFromPreviousInterface();
 
         speaker = new Speaker();
+    }
 
-
-        //recogemos los datos de la pantalla "StartScreen.java"
+    /**
+     * Get the data sent from the previous Screen
+     */
+    private void getDataFromPreviousInterface () {
         String mac = (String) getIntent().getExtras().get("MAC");
         String ipPublica = (String) getIntent().getExtras().get( "IP_PUBLICA" );
         String ipPrivada = (String) getIntent().getExtras().get("IP_PRIVADA");
@@ -62,60 +58,20 @@ public class CameraViewer extends AppCompatActivity implements View.OnClickListe
         String nombre = (String) getIntent().getExtras().get( "PASSWORD_CORRECT" );
         String password = (String) getIntent().getExtras().get( "PASSWORD" );
 
-        camera = new Camera( mac , ipPrivada, ipPublica , puerto, nombre , password);
-
-        URLCaller urlCaller = new URLCaller( "http://spuzi.esy.es/checkPublicIP.php", this );
-        urlCaller.startThread();
-
-        while(ipPublicaCliente == null){//espera activa
-        }
-
-
-        String IP;
-
-        //si cliente y servidor estan en la misma red, entonces usaremos la ip local para conectarse
-        //si estan en diferentes redes, entonces usare la ip publica
-        //si cliente y servidor se encuentra debajos del mismo NAT (router) entonces compartiran la misma
-        //IP publica
-        if(ipPublicaCliente.equals( camera.getPublicIP() )){
-            IP = camera.getPrivateIP();
-        }else{
-            IP = camera.getPublicIP();
-        }
-
-        if(conector == null){
-            if(hayConexionALaRed()){
-
-                progressBar.setVisibility( View.INVISIBLE );
-                textViewCargando.setVisibility( View.INVISIBLE );
-                //Mostramos solamente el texto y la barra de cargando carguemos los parametros
-                camView.setVisibility( View.VISIBLE );
-                botonStop.setVisibility( View.VISIBLE );
-
-                conector = new Conector( IP, puerto, password );
-
-                //view that draws the images sent by the server
-                vista = new Vista( this , width ,  height);
-                camView.addView( vista );
-
-                botonStop = (Button) findViewById( R.id.botonStop );
-                botonStop.setOnClickListener( this );
-
-                textViewCargando = (TextView) findViewById( R.id.textViewCargando );
-                progressBar = (ProgressBar) findViewById( R.id.progressBar );
-            }
-            else
-                Log.e( "Error:" , "Sin red, comprobar que la pantalla este encendida." );
-        }
+        remoteCamera = new Camera( mac , ipPrivada, ipPublica , puerto, nombre , password);
     }
 
 
     private void initUIElements(){
         setContentView( R.layout.client_camera_viewer );
+        buttonStop = (Button) findViewById( R.id.botonStop );
+        buttonStop.setOnClickListener( this );
+        textViewLoading = (TextView) findViewById( R.id.textViewLoading );
+        progressBar = (ProgressBar) findViewById( R.id.progressBar );
         camView = (FrameLayout) findViewById( R.id.cameraView );
         //Mostramos solamente el texto y la barra de cargando carguemos los parametros
         camView.setVisibility( View.INVISIBLE );
-        botonStop.setVisibility( View.INVISIBLE );
+        buttonStop.setVisibility( View.INVISIBLE );
     }
 
     /**
@@ -139,37 +95,81 @@ public class CameraViewer extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause () {
         super.onPause();
-        vista.stopThread();
-        conector.stopThread();
-        speaker.stopThread();
+        videoViewer.stopThread();
+        connector.stopThread();
+        speaker.stopWorker();
     }
 
     @Override
-    protected void onResume () {
-        vista.startThread();
-        speaker.startThread();
-        conector.startThread();
+    public void onResume () {
+        videoViewer.startThread();
+        speaker.startWorker();
+        connector.startThread();
         super.onResume();
     }
 
-    private boolean hayConexionALaRed (){
-        ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService( Context.CONNECTIVITY_SERVICE );
-        NetworkInfo networkInfo                 = connectivityManager.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected() && networkInfo.isAvailable())
-            return true;
-        else return false;
+    /**
+     * Hides the progress bar and a txt that says "loading"
+     * and shows the frame where you can see the camera and a stop button
+     */
+    @Override
+    protected void hideLoadingElements () {
+        runOnUiThread( new Runnable() {
+            @Override
+            public void run () {
+                progressBar.setVisibility( View.INVISIBLE );
+                textViewLoading.setVisibility( View.INVISIBLE );
+                camView.setVisibility( View.VISIBLE );
+                buttonStop.setVisibility( View.VISIBLE );
+            }
+        } );
+
+        String remoteIP;
+
+        /**
+         * If the client and the server are in the same Local Network then we use the private IP to connect them
+         * Else we use the public IP to connect them through internet
+         */
+        if(super.getPublicIP().equals( remoteCamera.getPublicIP() )){
+            remoteIP = remoteCamera.getPrivateIP();
+        }else{
+            remoteIP = remoteCamera.getPublicIP();
+        }
+
+        if( connector == null){
+            connector = new Connector( remoteIP, remoteCamera.getPort(), remoteCamera.getPassword() );
+            //view that draws the images sent by the server
+            videoViewer = new VideoViewer( this , width , height);
+            camView.addView( videoViewer );
+        }
     }
+
+    /**
+     * shows a progress bar and a txt that says "loading"
+     * and hides the frame where you can see the camera and a stop button
+     */
+    @Override
+    protected void showLoadingElements () {
+        runOnUiThread( new Runnable() {
+            @Override
+            public void run () {
+                progressBar.setVisibility( View.VISIBLE );
+                textViewLoading.setVisibility( View.VISIBLE );
+                camView.setVisibility( View.INVISIBLE );
+                buttonStop.setVisibility( View.INVISIBLE );
+            }
+        } );
+    }
+
 
     @Override
     public void onClick ( View v ) {
         switch (v.getId())
         {
             //handle multiple view click events
-            case R.id.botonStop:
-                //display in long period of time
-                //Toast.makeText( getApplicationContext(), "Cerrando conexion...", Toast.LENGTH_LONG ).show();
-                conector.cerrarComunicacion();
-                vista.stopThread();
+            case R.id.buttonStop:
+                connector.cerrarComunicacion();
+                videoViewer.stopThread();
 
                 Intent intent = new Intent( getApplicationContext(), ConnectTo.class );
                 startActivity( intent );
@@ -177,7 +177,5 @@ public class CameraViewer extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void setIpPublicaCliente ( String ipPublicaCliente ) {
-        this.ipPublicaCliente = ipPublicaCliente;
-    }
+
 }

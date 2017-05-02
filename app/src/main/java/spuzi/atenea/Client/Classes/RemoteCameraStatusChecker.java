@@ -26,7 +26,6 @@ public class RemoteCameraStatusChecker extends Worker {
     public RemoteCameraStatusChecker ( String name, ConnectTo client ){
         this.name += name;
         this.client = client;
-        super.startWorker();
     }
 
     @Override
