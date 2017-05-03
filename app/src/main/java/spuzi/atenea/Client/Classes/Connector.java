@@ -1,5 +1,6 @@
 package spuzi.atenea.Client.Classes;
 
+import android.app.ProgressDialog;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -15,9 +16,10 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.StringTokenizer;
 
+import spuzi.atenea.Client.Screens.CameraViewer;
 import spuzi.atenea.Common.Buffer;
-import spuzi.atenea.Common.ElSonido;
-import spuzi.atenea.Common.LaImagen;
+import spuzi.atenea.Common.Sound;
+import spuzi.atenea.Common.Image;
 import spuzi.atenea.Common.Worker;
 
 import static spuzi.atenea.Client.Classes.Speaker.criticalSection;
@@ -28,24 +30,24 @@ import static spuzi.atenea.Client.Classes.Speaker.criticalSection;
 
 
 public class Connector extends Worker{
-    private static final int TIEMPO_LIMITE_CONEXION = 10000;
+    private static final int TIME_LIMIT = 10000;
     private int MAX_CONECTION_ATTEMPT = 15;
     private Socket socket ;
     private String password;
     private DataOutputStream dataOutputStream = null;
     private DataInputStream dataInputStream = null;
-    BufferedInputStream input=null;
+    private BufferedInputStream input=null;
+    private CameraViewer activity;
 
-    //static Imagen imagen;
-    //static Sonido sonido;
 
-    static LaImagen imagen;
-    static ElSonido sonido;
+    static Image imagen;
+    static Sound sonido;
 
 
     static Buffer bufferSounds;
-    private Thread thread;
-    private boolean hayConexion = false;
+    //variable que indica cuando el hilo se esta ejecutando o no.
+    private boolean canAccessToServer = false;
+
 
 
     private int expectedSize = -1;
@@ -57,30 +59,31 @@ public class Connector extends Worker{
     private String IP ;
     private int port;
 
-    //variable que indica cuando el hilo se esta ejecutando o no.
-    boolean run;
 
-    public Connector ( String IP , int puerto , String password ) {
+
+    public Connector ( String IP , int puerto , String password , CameraViewer activity) {
         this.password = password;
         socket = new Socket(  );//abrimos un socket para comunicarnos con el servidor
         this.port = puerto;
         this.IP = IP;
         bufferSounds  = new Buffer( 30 );
+
+        this.activity = activity;
     }
 
     @Override
     public void run () {
-        while(run){
+        while(super.isRunning()){
             try {
                 tryToConnectWithServer( IP );
 
                 //connect to server
                 try {
                     socket.connect( new InetSocketAddress( IP, port )
-                            , TIEMPO_LIMITE_CONEXION );
+                            , TIME_LIMIT );
                 }catch(SocketException e){
                     if(e.getMessage().equals( "Already connected" )){
-                        while ( run ) {
+                        while ( super.isRunning() ) {
                             try {
                                 //leemos las imagenes que envia el servidor
                                 totalRead = 0;
@@ -94,7 +97,7 @@ public class Connector extends Worker{
                                 }
 
                                 //creamos un objeto imagen con los datos que nos ha enviado
-                                imagen = new LaImagen();
+                                imagen = new Image();
                                 imagen.setContent( data );
 
                                 //indicamos al servidor que ya hemos recibido la imagen y que puede seguir enviando datos
@@ -107,7 +110,7 @@ public class Connector extends Worker{
                     }
                     else{
                         //OTROS ERRORES SIN TRATAR
-                        while(run){
+                        while(super.isRunning()){
                             System.out.println(e.getMessage());
                         }
                     }
@@ -131,7 +134,7 @@ public class Connector extends Worker{
                 Cronometro bucle1 = new Cronometro();
                 Cronometro bucle2 = new Cronometro();
 
-                while ( run ) {
+                while ( super.isRunning() ) {
                     System.out.println("Tiempo:" + bucle1.getCurrentInMiliseconds());
 
                     bucle1.start();
@@ -175,14 +178,14 @@ public class Connector extends Worker{
                         System.out.println(e.getMessage());
                     }
 
-                    sonido = new ElSonido( soundData );
+                    sonido = new Sound( soundData );
                     if( sonido.getLength() > 0  && criticalSection ) {
                         bufferSounds.add( sonido );
                         //System.out.println("sonido insertado: " + bufferSounds.size() );
                     }
 
                     //creamos un objeto imagen con los datos que nos ha enviado
-                    imagen = new LaImagen(imageData , 0 ,0);
+                    imagen = new Image( imageData , 0 , 0);
 
                     //indicamos al servidor que ya hemos recibido la imagen y que puede seguir enviando datos
                     dataOutputStream.writeUTF( "OK" );
@@ -202,7 +205,7 @@ public class Connector extends Worker{
             if(dataInputStream != null)
                 dataInputStream.close();
 
-            stopThread();
+            stopWorker();
 
             if(input != null)
                 input.close();
@@ -214,33 +217,13 @@ public class Connector extends Worker{
         }
     }
 
-    public void startThread(){
-        //iniciamos el hilo
-        this.thread = new Thread(this);
-        setRun(true);
-        thread.start();
+
+    @Override
+    public void stopWorker () {
+        super.stopWorker();
+        imagen = null;
     }
 
-    public void stopThread(){
-        //paramos el hilo
-        boolean stop = true;
-        setRun( false );
-        while(stop) {
-            try {
-                this.thread.join();
-                stop = false;
-                imagen = null;
-            } catch ( InterruptedException e ) {
-                e.printStackTrace();
-                break;
-            }
-        }
-    }
-
-
-    public void setRun(boolean r){
-        this.run = r;
-    }
 
     public String ping(String direccion){
         String resultado ="";
@@ -262,13 +245,13 @@ public class Connector extends Worker{
     }
 
 
-    public boolean analizarPing(String str ){
+    public boolean analyzePing ( String str ){
         StringTokenizer tokenizer = new StringTokenizer( str, "," );
         tokenizer.nextToken();
         str = tokenizer.nextToken();
         tokenizer = new StringTokenizer( str," " );
-        int paquetesRecibidos = Integer.parseInt( tokenizer.nextToken() );
-        if(paquetesRecibidos == 0) {
+        int numberOfPacketRecieveFromServer = Integer.parseInt( tokenizer.nextToken() );
+        if(numberOfPacketRecieveFromServer == 0) {
             Log.e( "Error:", "server unreachable" );
             return false;
         }
@@ -278,21 +261,29 @@ public class Connector extends Worker{
         }
     }
 
-    public void tryToConnectWithServer ( String direccion ) {
+    public void tryToConnectWithServer ( String serverIP ) {
         String str = "";
-        int intentosDeConexion = 0 ;
+        int numberAttemptsOfConnection = 0 ;
 
-        System.out.println("Intentando conectar con el servidor, puede tardar unos minutos");
-        while( intentosDeConexion < MAX_CONECTION_ATTEMPT && !hayConexion ){
-            System.out.println("Attempt " + intentosDeConexion + "of " + MAX_CONECTION_ATTEMPT);
-            str = ping( direccion );
-            hayConexion =  analizarPing( str );
-            intentosDeConexion++;
+        //the activity shows a ProgressDialog
+        this.activity.showProgressDialog();
+
+        System.out.println("Trying to connect with server, this may take a few minutes");
+        while( numberAttemptsOfConnection < MAX_CONECTION_ATTEMPT && !canAccessToServer ){
+            System.out.println("Attempt " + numberAttemptsOfConnection + "of " + MAX_CONECTION_ATTEMPT);
+            str = ping( serverIP );
+            canAccessToServer =  analyzePing( str );
+            numberAttemptsOfConnection++;
+            activity.incrementProgressDialog( MAX_CONECTION_ATTEMPT / numberAttemptsOfConnection );
         }
-        if(hayConexion)
-            System.out.println("Connected!");
-        else
+        if( canAccessToServer ) {
+            System.out.println( "Connected!" );
+            activity.hideProgressDialog();
+        }
+        else {
             System.out.println( "No se pudo conectar, apagando la aplicación" );
+            activity.showsMessageCouldNotConnectWithServer();
+        }
     }
 
 

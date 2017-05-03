@@ -4,18 +4,18 @@ package spuzi.atenea.Common;
  * Created by spuzi on 23/03/2017.
  */
 
-public class LaImagen extends Data {
+public class Image extends Data {
 
     private int width;
     private int height;
 
-    public LaImagen(){
+    public Image (){
         super();
         this.width = 0;
         this.height = 0;
     }
 
-    public LaImagen(byte[] content , int width , int height){
+    public Image ( byte[] content , int width , int height ){
         super(content);
         this.width = width;
         this.height = height;

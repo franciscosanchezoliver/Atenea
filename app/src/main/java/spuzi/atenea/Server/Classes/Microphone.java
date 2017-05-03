@@ -6,6 +6,7 @@ import android.media.MediaRecorder;
 import android.util.Log;
 
 import spuzi.atenea.Common.Buffer;
+import spuzi.atenea.Common.Sound;
 
 /**
  * Created by spuzi on 09/03/2017.

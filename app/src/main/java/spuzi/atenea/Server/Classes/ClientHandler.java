@@ -8,6 +8,9 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+import spuzi.atenea.Common.Sound;
+import spuzi.atenea.Common.Image;
+
 import static spuzi.atenea.Server.Classes.CameraPreview.BUFFER_IMAGES;
 import static spuzi.atenea.Server.Screens.CameraOnline.tcpServer;
 

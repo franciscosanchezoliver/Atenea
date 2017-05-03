@@ -5,6 +5,7 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.util.Log;
 
+import spuzi.atenea.Common.Sound;
 import spuzi.atenea.Common.Worker;
 
 import static spuzi.atenea.Client.Classes.Connector.bufferSounds;
@@ -37,7 +38,7 @@ public class Speaker extends Worker{
         while(super.isRunning()) {
             if(bufferSounds != null && bufferSounds.size() > 0) {
                 try {
-                    playSound( (Sonido) bufferSounds.pollFirst() );
+                    playSound( (Sound) bufferSounds.pollFirst() );
                 }catch ( Exception e ){
                     Log.e( "ERROR:", "playing sound" );
                     Log.e("ERROR:", e.getMessage());
@@ -46,8 +47,8 @@ public class Speaker extends Worker{
         }
     }
 
-    private void playSound(Sonido sonido ){
-        audioTrack.write( sonido.getContent(), 0, sonido.getContent().length );
+    private void playSound (Sound sound ){
+        audioTrack.write( sound.getContent(), 0, sound.getContent().length );
     }
 
 

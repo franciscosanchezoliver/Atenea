@@ -4,16 +4,16 @@ package spuzi.atenea.Common;
  * Created by spuzi on 23/03/2017.
  */
 
-public class ElSonido extends Data {
+public class Sound extends Data {
 
     private long time; //when the sound was recorded in nanoseconds
 
-    public ElSonido(){
+    public Sound (){
         super();
         this.time = System.nanoTime();
     }
 
-    public ElSonido( byte[] content ){
+    public Sound ( byte[] content ){
         super(content);
         this.time = System.nanoTime();
     }

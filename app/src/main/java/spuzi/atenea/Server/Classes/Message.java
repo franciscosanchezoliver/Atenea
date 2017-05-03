@@ -3,6 +3,9 @@ package spuzi.atenea.Server.Classes;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
+import spuzi.atenea.Common.Sound;
+import spuzi.atenea.Common.Image;
+
 /**
  * Created by spuzi on 09/03/2017.
  */

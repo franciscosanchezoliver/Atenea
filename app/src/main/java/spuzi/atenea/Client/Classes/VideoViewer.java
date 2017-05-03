@@ -1,5 +1,6 @@
 package spuzi.atenea.Client.Classes;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,7 +19,7 @@ import java.io.ByteArrayOutputStream;
  */
 
 
-public class VideoViewer extends SurfaceView implements  Runnable{
+public class VideoViewer extends SurfaceView implements  Runnable ,SurfaceHolder.Callback{
     private SurfaceHolder holder;
     private YuvImage yuv;//Android coge las imagenes en formato yuv
     private Bitmap bitmap;
@@ -38,7 +39,7 @@ public class VideoViewer extends SurfaceView implements  Runnable{
         super( context );
 
         holder = getHolder();
-        holder.addCallback( new MyCallback() );
+        holder.addCallback( this );
         // deprecated setting, but required on Android versions prior to 3.0
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
@@ -153,6 +154,21 @@ public class VideoViewer extends SurfaceView implements  Runnable{
         }
     }
 
+
+    @Override
+    public void surfaceCreated ( SurfaceHolder holder ) {
+        System.out.println("Surface has been created");
+    }
+
+    @Override
+    public void surfaceChanged ( SurfaceHolder holder, int format, int width, int height ) {
+        System.out.println("Surface has been changed");
+    }
+
+    @Override
+    public void surfaceDestroyed ( SurfaceHolder holder ) {
+        System.out.println("Surface has been destroyed");
+    }
 
 
 }

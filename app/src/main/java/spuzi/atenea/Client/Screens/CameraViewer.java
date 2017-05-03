@@ -1,5 +1,6 @@
 package spuzi.atenea.Client.Screens;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -8,6 +9,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import spuzi.atenea.Client.Classes.Camera;
 import spuzi.atenea.Client.Classes.Connector;
@@ -34,6 +36,8 @@ public class CameraViewer extends NetworkActivity implements View.OnClickListene
     private TextView textViewLoading;
     private ProgressBar progressBar;
 
+    private ProgressDialog progressDialog;//shows the attemps of connections with the server
+
     private Speaker speaker;
 
     @Override
@@ -52,19 +56,19 @@ public class CameraViewer extends NetworkActivity implements View.OnClickListene
      */
     private void getDataFromPreviousInterface () {
         String mac = (String) getIntent().getExtras().get("MAC");
-        String ipPublica = (String) getIntent().getExtras().get( "IP_PUBLICA" );
-        String ipPrivada = (String) getIntent().getExtras().get("IP_PRIVADA");
-        int puerto = (int) getIntent().getExtras().get( "PUERTO" );
-        String nombre = (String) getIntent().getExtras().get( "PASSWORD_CORRECT" );
+        String publicIP = (String) getIntent().getExtras().get( "IP_PUBLICA" );
+        String privateIP = (String) getIntent().getExtras().get("IP_PRIVADA");
+        int port = (int) getIntent().getExtras().get( "PUERTO" );
+        String name = (String) getIntent().getExtras().get( "PASSWORD_CORRECT" );
         String password = (String) getIntent().getExtras().get( "PASSWORD" );
 
-        remoteCamera = new Camera( mac , ipPrivada, ipPublica , puerto, nombre , password);
+        remoteCamera = new Camera( mac , privateIP, publicIP , port, name , password);
     }
 
 
     private void initUIElements(){
         setContentView( R.layout.client_camera_viewer );
-        buttonStop = (Button) findViewById( R.id.botonStop );
+        buttonStop = (Button) findViewById( R.id.buttonStop );
         buttonStop.setOnClickListener( this );
         textViewLoading = (TextView) findViewById( R.id.textViewLoading );
         progressBar = (ProgressBar) findViewById( R.id.progressBar );
@@ -96,7 +100,7 @@ public class CameraViewer extends NetworkActivity implements View.OnClickListene
     protected void onPause () {
         super.onPause();
         videoViewer.stopThread();
-        connector.stopThread();
+        connector.stopWorker();
         speaker.stopWorker();
     }
 
@@ -104,7 +108,7 @@ public class CameraViewer extends NetworkActivity implements View.OnClickListene
     public void onResume () {
         videoViewer.startThread();
         speaker.startWorker();
-        connector.startThread();
+        connector.startWorker();
         super.onResume();
     }
 
@@ -113,7 +117,7 @@ public class CameraViewer extends NetworkActivity implements View.OnClickListene
      * and shows the frame where you can see the camera and a stop button
      */
     @Override
-    protected void hideLoadingElements () {
+    public void hideLoadingElements () {
         runOnUiThread( new Runnable() {
             @Override
             public void run () {
@@ -137,7 +141,7 @@ public class CameraViewer extends NetworkActivity implements View.OnClickListene
         }
 
         if( connector == null){
-            connector = new Connector( remoteIP, remoteCamera.getPort(), remoteCamera.getPassword() );
+            connector = new Connector( remoteIP, remoteCamera.getPort(), remoteCamera.getPassword() , this );
             //view that draws the images sent by the server
             videoViewer = new VideoViewer( this , width , height);
             camView.addView( videoViewer );
@@ -149,7 +153,7 @@ public class CameraViewer extends NetworkActivity implements View.OnClickListene
      * and hides the frame where you can see the camera and a stop button
      */
     @Override
-    protected void showLoadingElements () {
+    public void showLoadingElements () {
         runOnUiThread( new Runnable() {
             @Override
             public void run () {
@@ -177,5 +181,35 @@ public class CameraViewer extends NetworkActivity implements View.OnClickListene
         }
     }
 
+    /**
+     * Shows the attempts of connection with the server
+     */
+    public void showProgressDialog(){
+        progressDialog = new ProgressDialog( this );
+        progressDialog.setMessage( "Trying to connect to server....." );
+        progressDialog.setProgressStyle( ProgressDialog.STYLE_HORIZONTAL );
+        progressDialog.setIndeterminate( true );
+        progressDialog.setProgress(0);
+        progressDialog.show();
+    }
 
+    /**
+     * Increment the value of the progressDialog
+     * @param value
+     */
+    public void incrementProgressDialog(int value){
+        progressDialog.setProgress( progressDialog.getProgress() + value );
+    }
+
+    /**
+     * Hide the progressDialog
+     */
+    public void hideProgressDialog(){
+        progressDialog.hide();
+    }
+
+
+    public void showsMessageCouldNotConnectWithServer () {
+        Toast.makeText( getApplicationContext(), "Couldn't connect to server", Toast.LENGTH_LONG ).show();
+    }
 }

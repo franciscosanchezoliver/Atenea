@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import spuzi.atenea.Common.Buffer;
+import spuzi.atenea.Common.Image;
 import spuzi.atenea.Server.Interfaces.PreviewCamInterface;
 
 import static android.content.ContentValues.TAG;
@@ -41,7 +42,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     //static variable that can be shared between different threads
     public static Buffer BUFFER_IMAGES = new Buffer( 10);
 
-    private void openCamera(){
+    public void openCamera(){
         if( camera == null) {
             try {
                 camera = Camera.open(); // attempt to get a Camera instance

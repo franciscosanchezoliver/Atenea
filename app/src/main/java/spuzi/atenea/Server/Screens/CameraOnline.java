@@ -89,16 +89,6 @@ public class CameraOnline extends NetworkActivity implements View.OnClickListene
     };
 
 
-    private void showProgressDialog(){
-
-        progressDialog = new ProgressDialog( this );
-        progressDialog.setMessage( "Cargando....." );
-        progressDialog.setProgressStyle( ProgressDialog.STYLE_HORIZONTAL );
-        progressDialog.setIndeterminate( true );
-        progressDialog.setProgress(0);
-        progressDialog.show();
-    }
-
     @Override
     protected void onCreate (Bundle savedInstanceState ) {
         super.onCreate(savedInstanceState);
